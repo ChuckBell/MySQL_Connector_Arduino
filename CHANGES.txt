@@ -1,0 +1,58 @@
+CHANGES
+=======
+This file contains a brief summary of changes made from previous versions of
+the connector.
+
+1.1.0a - January 2016
+---------------------
+* Major redesign of classes. Now have separate connection and cursor classes
+* Removed WITH_SELECT, WITH_WIFI, etc. to avoid confusion and simplify
+* Renamed many methods to correspond with traditional MySQL connector
+  nomenclature
+* Added more error handling for lossy networks
+* Memory deallocation methods consolidated (see examples)
+* More, smaller examples added
+* Documentation updated
+
+1.0.4ga - July 2015
+--------------------
+* Fixed a defect in the get_next_row() method.
+* Added the reference manual. Yippee!
+
+1.0.3rc - March 2015
+--------------------
+* Code has been changed slightly to help with long latency issues over
+  wifi and slow connections.
+* A new cleanup method was added to cleanup a final OK packet after a
+  stored procedure call with a result.
+* Code now compiles without errors for the latest Beta Arduino IDE
+  (const error).
+
+1.0.2b - April 2014
+-------------------
+* The WITH_SELECT is turned *OFF* by default. If you want to use select
+  queries, be sure to uncomment this in the mysql.h file.
+* Reduced memory use! The library has been trimmed to save memory.
+  - All static strings moved to PROGMEM strings
+  - Unused structures removed (e.g. ok_packet)
+  - Moved more methods not needed to optional compilation
+
+1.0.1b - February 2014
+----------------------
+* Added disconnect() method for disconnecting from server.
+* Improved error handling for dropped packets.
+* Better error handling for lost connections and out of memory detection.
+
+1.0.0b - October 2013
+---------------------
+* Improved support for result sets (select queries)
+* Added conditional compile for use with select queries. If you don't use
+  select queries, comment out WITH_SELECT in mysql.h to save some memory.
+* Added support for WiFi shield using conditional compilation.
+* New version() method to check version of the connector.
+* Simplified, single-file download
+
+Initial Release - April 2013
+----------------------------
+* Basic query capability
+* Basic result set handling

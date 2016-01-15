@@ -1,3 +1,5 @@
+NOTICE: Work in progress. Code will be available soon. CAB 15 January 2016
+
 MySQL Connector/Arduino
 =======================
 Have you ever wanted to connect your Arduino project to a database to either store the data you've collected or retrieve data saved to trigger events in your sketch? Well, now you can connect your Arduino project directly to a MySQL server without using an intermediate computer or a web- or cloud-based service. Having direct access to a database server means you can store data acquired from your project as well as check values stored in tables on the server.
