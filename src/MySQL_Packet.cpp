@@ -25,6 +25,7 @@
   Version 1.0.3rc Updated by Dr. Charles A. Bell, March 2015.
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
 */
 #include <Arduino.h>
 #include <MySQL_Packet.h>

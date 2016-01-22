@@ -28,6 +28,7 @@
   Version 1.0.3rc Updated by Dr. Charles A. Bell, March 2015.
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
 */
 #ifndef MYSQL_PACKET_H
 #define MYSQL_PACKET_H
@@ -39,7 +40,7 @@
 #define MYSQL_OK_PACKET     0x00
 #define MYSQL_EOF_PACKET    0xfe
 #define MYSQL_ERROR_PACKET  0xff
-#define MYSQL_VERSION_STR   "1.1.0a"
+#define MYSQL_VERSION_STR   "1.1.1a"
 
 const char MEMORY_ERROR[] PROGMEM = "Memory error.";
 const char PACKET_ERROR[] PROGMEM = "Packet error.";

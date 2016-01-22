@@ -3,6 +3,10 @@ CHANGES
 This file contains a brief summary of changes made from previous versions of
 the connector.
 
+1.1.1a - January 2016
+---------------------
+* Minor issue with deprecated #import fixed. No new functionality.
+
 1.1.0a - January 2016
 ---------------------
 * Major redesign of classes. Now have separate connection and cursor classes
