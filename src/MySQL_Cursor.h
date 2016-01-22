@@ -33,7 +33,7 @@
 #ifndef MYSQL_QUERY_H
 #define MYSQL_QUERY_H
 
-#import <MySQL_Connection.h>
+#include <MySQL_Connection.h>
 
 #define MAX_FIELDS    0x20   // Maximum number of fields. Reduce to save memory. Default=32
 

@@ -26,7 +26,7 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
 */
-#import <MySQL_Cursor.h>
+#include <MySQL_Cursor.h>
 
 const char BAD_MOJO[] PROGMEM = "Bad mojo. EOF found reading column header.";
 const char ROWS[] PROGMEM = " rows in result.";
