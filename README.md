@@ -10,6 +10,6 @@ See the reference manual in the extras folder for how to get starting using the 
 
 Notice
 ------
-This is a new, alpha release of the existing Connector/Arduino code found at https://launchpad.net/mysql-arduino. The version on LaunchPad is version 1.0.4ga.
+This is a new release of the Connector/Arduino library. Older, obsolete versions (version 1.0.4ga and prior) can be found on LaunchPad.
 
-If you are finding this library thinking it is a new library, you're partially correct. This version is greatly improved over the old version. To see what changed, see the "Changes from Previous Versions" section in the reference manual in the extras folder.
+If you have used the older versions and are finding this library thinking it is a new library, you're partially correct. This version is greatly improved over the old version. To see what changed, see the "Changes from Previous Versions" section in the reference manual in the extras folder.
