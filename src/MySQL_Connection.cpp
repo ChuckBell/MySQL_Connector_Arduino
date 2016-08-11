@@ -83,6 +83,36 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
   return false;
 }
 
+boolean MySQL_Connection::connect(char *server, int port, char *user,
+                                  char *password)
+{
+  int connected = 0;
+  int i = -1;
+
+  // Retry up to MAX_CONNECT_ATTEMPTS times 1 second apart.
+  do {
+    delay(1000);
+    connected = client->connect(server, port);
+    i++;
+  } while (i < MAX_CONNECT_ATTEMPTS && !connected);
+
+  if (connected) {
+    read_packet();
+    parse_handshake_packet();
+    send_authentication_packet(user, password);
+    read_packet();
+    if (check_ok_packet() != 0) {
+      parse_error_packet();
+      return false;
+    }
+    show_error(CONNECTED);
+    Serial.println(server_version);
+    free(server_version); // don't need it anymore
+    return true;
+  }
+  return false;
+}
+
 /*
   close - cancel the connection
 
