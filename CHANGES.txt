@@ -3,6 +3,25 @@ CHANGES
 This file contains a brief summary of changes made from previous versions of
 the connector.
 
+1.2.0a - April 2017
+---------------------
+* Stability and speed improvements.
+
+* Removed infinite wait in read_packet() if connection dropped.
+  Merged wait_for_client() and wait_for_data() into one
+  universal wait_for_bytes(int).
+* Improved connect() speed.
+* Improved sending queries speed.
+  Sending the whole buffer at a time (not byte by byte).
+* Fixed bug with check_ok_packet() return value.
+  check_ok_packet() simplified to get_packet_type().
+* Added checks for buffer validity in places it is going to be used.
+  Improved stability on "incorrect" methods calls.
+* Restored WITH_SELECT, but defined by default.
+* Added DEBUG define to avoid prints to Serial port.
+  Useful when Serial is used to communicate with sensors.
+* Added example for ESP8266.
+
 1.1.1a - January 2016
 ---------------------
 * Minor issue with deprecated #import fixed. No new functionality.

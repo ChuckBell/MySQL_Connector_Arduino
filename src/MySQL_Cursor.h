@@ -36,8 +36,11 @@
 
 #include <MySQL_Connection.h>
 
+#define WITH_SELECT          // Comment this if you don't need SELECT queries. 
+                             // Reduces memory footprint of the library.
 #define MAX_FIELDS    0x20   // Maximum number of fields. Reduce to save memory. Default=32
 
+#ifdef WITH_SELECT
 // Structure for retrieving a field (minimal implementation).
 typedef struct {
   char *db;
@@ -55,34 +58,43 @@ typedef struct {
 typedef struct {
   char *values[MAX_FIELDS];
 } row_values;
+#endif  // WITH_SELECT
 
 class MySQL_Cursor {
   public:
     MySQL_Cursor(MySQL_Connection *connection);
-    ~MySQL_Cursor() { close(); };
+    ~MySQL_Cursor();
     boolean execute(const char *query, boolean progmem=false);
+
+  private:
+    boolean execute_query(int query_len);
+
+#ifdef WITH_SELECT
+  public:
+    void close();
     column_names *get_columns();
     row_values *get_next_row();
     void show_results();
-    void close();
 
   private:
-    boolean columns_read;
-    MySQL_Connection *conn;
-    int num_cols;
-    column_names columns;
-    row_values row;
-
     void free_columns_buffer();
     void free_row_buffer();
     bool clear_ok_packet();
-    boolean execute_query(int query_len);
+
     char *read_string(int *offset);
     int get_field(field_struct *fs);
     int get_row();
     boolean get_fields();
     int get_row_values();
     column_names *query_result();
+    
+    boolean columns_read;
+    int num_cols;
+    column_names columns;
+    row_values row;
+#endif
+
+    MySQL_Connection *conn;
 };
 
 #endif

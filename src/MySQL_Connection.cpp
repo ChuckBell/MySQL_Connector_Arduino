@@ -33,6 +33,7 @@
 #include <MySQL_Encrypt_Sha1.h>
 
 #define MAX_CONNECT_ATTEMPTS 3
+#define CONNECT_DELAY_MS     500
 
 const char CONNECTED[] PROGMEM = "Connected to server version ";
 const char DISCONNECTED[] PROGMEM = "Disconnected.";
@@ -57,30 +58,38 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
                                   char *password)
 {
   int connected = 0;
-  int i = -1;
+  int retries = MAX_CONNECT_ATTEMPTS;
 
-  // Retry up to MAX_CONNECT_ATTEMPTS times 1 second apart.
-  do {
-    delay(1000);
+  // Retry up to MAX_CONNECT_ATTEMPTS times.
+  while (retries--)
+  {
     connected = client->connect(server, port);
-    i++;
-  } while (i < MAX_CONNECT_ATTEMPTS && !connected);
+    if (connected)
+      break;
 
-  if (connected) {
-    read_packet();
-    parse_handshake_packet();
-    send_authentication_packet(user, password);
-    read_packet();
-    if (check_ok_packet() != 0) {
-      parse_error_packet();
-      return false;
-    }
-    show_error(CONNECTED);
-    Serial.println(server_version);
-    free(server_version); // don't need it anymore
-    return true;
+    delay(CONNECT_DELAY_MS);
   }
-  return false;
+
+  if (!connected)
+    return false;
+
+  read_packet();
+  parse_handshake_packet();
+  send_authentication_packet(user, password);
+  read_packet();
+  if (get_packet_type() != MYSQL_OK_PACKET) {
+    parse_error_packet();
+    return false;
+  }
+
+  show_error(CONNECTED);
+
+#ifdef DEBUG
+  Serial.println(server_version);
+#endif
+
+  free(server_version); // don't need it anymore
+  return true;
 }
 
 /*

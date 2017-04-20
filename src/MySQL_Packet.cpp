@@ -32,7 +32,7 @@
 #include <MySQL_Encrypt_Sha1.h>
 
 #define MYSQL_DATA_TIMEOUT  3000   // Wifi client wait in milliseconds
-#define MYSQL_WAIT_INTERVAL 100    // WiFi client wait interval
+#define MYSQL_WAIT_INTERVAL 10     // WiFi client wait interval
 
 /*
   Constructor
@@ -53,6 +53,7 @@ MySQL_Packet::MySQL_Packet(Client *client_instance) {
   EOL[in]    True if we print EOLN character
 */
 void MySQL_Packet::show_error(const char *msg, bool EOL) {
+#ifdef DEBUG
   char pos;
   while ((pos = pgm_read_byte(msg))) {
     Serial.print(pos);
@@ -60,6 +61,7 @@ void MySQL_Packet::show_error(const char *msg, bool EOL) {
   }
   if (EOL)
     Serial.println();
+#endif
 }
 
 /*
@@ -150,8 +152,7 @@ void MySQL_Packet::send_authentication_packet(char *user, char *password)
   buffer[3] = byte(0x01);
 
   // Write the packet
-  for (int i = 0; i < size_send; i++)
-    client->write(buffer[i]);
+  client->write((uint8_t*)buffer, size_send);
 }
 
 
@@ -206,61 +207,41 @@ boolean MySQL_Packet::scramble_password(char *password, byte *pwd_hash) {
 }
 
 /*
-  wait_for_client - Wait until data is available for reading
+  wait_for_bytes - Wait until data is available for reading
 
   This method is used to permit the connector to respond to servers
   that have high latency or execute long queries. The timeout is
-  set by MYSQL_MAX_TIMEOUT. Adjust this value to match the performance of
+  set by MYSQL_DATA_TIMEOUT. Adjust this value to match the performance of
   your server and network.
 
   It is also used to read how many bytes in total are available from the
   server. Thus, it can be used to know how large a data burst is from
   the server.
 
+  bytes_need[in]    Bytes count to wait for
+
   Returns integer - Number of bytes available to read.
 */
-int MySQL_Packet::wait_for_client() {
+int MySQL_Packet::wait_for_bytes(int bytes_need)
+{
+  const long wait_till = millis() + MYSQL_DATA_TIMEOUT;
   int num = 0;
-  int timeout = 0;
-  do {
+  long now = 0;
+
+  do
+  {
+    now = millis();
     num = client->available();
-    timeout++;
-    if (num < MYSQL_MIN_BYTES and timeout < MYSQL_MAX_TIMEOUT) {
-      delay(100);  // adjust for network latency
-    }
-  } while (num < MYSQL_MIN_BYTES and timeout < MYSQL_MAX_TIMEOUT);
-  return num;
-}
-
-/*
-  wait_for_data
-
-  This method waits until client is sending data. It will timeout if no
-  data is available for more than MYSQL_DATA_TIMEOUT in milliseconds in WAIT_INTERVAL
-  milliseconds intervals.
-
-  Returns boolean - true = no timeout, data available; false = timeout, no data.
-*/
-boolean MySQL_Packet::wait_for_data() {
-  bool data_available = client->available();
-  int milliseconds = 0;
-
-  // Check to see if data is available right away, don't wait.
-  if (data_available) {
-    return true;
-  }
-  // No data, so we wait.
-  while ((!data_available) && (milliseconds < MYSQL_DATA_TIMEOUT)) {
-    data_available = client->available();
-    if (data_available) {
-      return true;
-    } else {
+    if (num < bytes_need)
       delay(MYSQL_WAIT_INTERVAL);
-      milliseconds += MYSQL_WAIT_INTERVAL;
-    }
-  }
-  show_error(READ_TIMEOUT, true);
-  return false;
+    else
+      break;
+  } while (now < wait_till);
+
+  if (num == 0 && now >= wait_till)
+    client->stop();
+
+  return num;
 }
 
 /*
@@ -281,32 +262,30 @@ boolean MySQL_Packet::wait_for_data() {
 void MySQL_Packet::read_packet() {
   byte local[4];
 
-  if (buffer != NULL)
+  if (buffer) {
     free(buffer);
-
-  int avail_bytes = wait_for_client();
-  while (avail_bytes < 4) {
-    avail_bytes = wait_for_client();
+    buffer = NULL;
   }
 
   // Read packet header
-  for (int i = 0; i < 4; i++) {
-    // Wait for client. Abort if no data after TIMEOUT_DATA milliseconds
-    if (!wait_for_data()) {
-      return;
-    }
-    local[i] = client->read();
+  if (wait_for_bytes(4) < 4) {
+    show_error(READ_TIMEOUT, true);
+    return;
   }
+  for (int i = 0; i < 4; i++)
+    local[i] = client->read();
 
   // Get packet length
   packet_len = local[0];
   packet_len += (local[1] << 8);
   packet_len += ((uint32_t)local[2] << 16);
+
   // We must wait for slow arriving packets for Ethernet shields only.
-  avail_bytes = wait_for_client();
-  while (avail_bytes < packet_len) {
-    avail_bytes = wait_for_client();
+  if (wait_for_bytes(packet_len) < packet_len) {
+    show_error(READ_TIMEOUT, true);
+    return;
   }
+
   // Check for valid packet.
   if (packet_len < 0) {
     show_error(PACKET_ERROR, true);
@@ -320,13 +299,8 @@ void MySQL_Packet::read_packet() {
   for (int i = 0; i < 4; i++)
     buffer[i] = local[i];
 
-  for (int i = 4; i < packet_len+4; i++) {
-    // Wait for client. Abort if no data after TIMEOUT_DATA milliseconds
-    if (!wait_for_data()) {
-      return;
-    }
+  for (int i = 4; i < packet_len+4; i++)
     buffer[i] = client->read();
-  }
 }
 
 
@@ -355,6 +329,9 @@ void MySQL_Packet::read_packet() {
                                  a scramble seed
 */
 void MySQL_Packet::parse_handshake_packet() {
+  if (!buffer)
+    return;
+
   int i = 5;
   do {
     i++;
@@ -395,20 +372,23 @@ void MySQL_Packet::parse_handshake_packet() {
   n                           message
 */
 void MySQL_Packet::parse_error_packet() {
+#ifdef DEBUG
   Serial.print("Error: ");
   Serial.print(read_int(5, 2));
   Serial.print(" = ");
+
+  if (!buffer)
+    return;
+
   for (int i = 0; i < packet_len-9; i++)
     Serial.print((char)buffer[i+13]);
   Serial.println(".");
+#endif
 }
 
 
 /*
-  check_ok_packet - Decipher an Ok packet from the server.
-
-  This method attempts to parse an Ok packet. If the packet is not an
-  Ok, packet, it returns the packet type.
+  get_packet_type - Returns the packet type received from the server.
 
    Bytes                       Name
    -----                       ----
@@ -421,11 +401,12 @@ void MySQL_Packet::parse_error_packet() {
 
   Returns integer - 0 = successful parse, packet type if not an Ok packet
 */
-int MySQL_Packet::check_ok_packet() {
+int MySQL_Packet::get_packet_type() {
+  if (!buffer)
+    return -1;
+
   int type = buffer[4];
-  if (type != MYSQL_OK_PACKET)
-    return type;
-  return 0;
+  return type;
 }
 
 
@@ -440,6 +421,9 @@ int MySQL_Packet::check_ok_packet() {
   Returns integer - number of bytes integer consumes
 */
 int MySQL_Packet::get_lcb_len(int offset) {
+  if (!buffer)
+    return 0;
+
   int read_len = buffer[offset];
   if (read_len > 250) {
     // read type:
@@ -468,6 +452,8 @@ int MySQL_Packet::get_lcb_len(int offset) {
 int MySQL_Packet::read_int(int offset, int size) {
   int value = 0;
   int new_size = 0;
+  if (!buffer)
+    return -1;
   if (size == 0)
      new_size = get_lcb_len(offset);
   if (size == 1)
@@ -522,6 +508,9 @@ void MySQL_Packet::store_int(byte *buff, long value, int size) {
   delete this method.
 */
 void MySQL_Packet::print_packet() {
+  if (!buffer)
+    return;
+
   Serial.print("Packet: ");
   Serial.print(buffer[3]);
   Serial.print(" contains ");

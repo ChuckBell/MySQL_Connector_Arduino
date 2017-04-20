@@ -44,15 +44,24 @@ const char NOT_CONNECTED[] PROGMEM = "ERROR: Class requires connected server.";
 */
 MySQL_Cursor::MySQL_Cursor(MySQL_Connection *connection) {
   conn = connection;
-  if (!conn->connected()) {
-    Serial.println(NOT_CONNECTED);
-  }
+#ifdef WITH_SELECT
   columns.num_fields = 0;
   for (int f = 0; f < MAX_FIELDS; f++) {
     columns.fields[f] = NULL;
     row.values[f] = NULL;
   }
   columns_read = false;
+#endif
+}
+
+
+/*
+  Destructor
+*/
+MySQL_Cursor::~MySQL_Cursor() {
+#ifdef WITH_SELECT
+  close();
+#endif
 }
 
 
@@ -76,6 +85,11 @@ boolean MySQL_Cursor::execute(const char *query, boolean progmem)
 {
   int query_len;   // length of query
 
+  if (!conn->connected()) {
+    conn->show_error(NOT_CONNECTED, true);
+    return false;
+  }
+
   if (progmem) {
     query_len = (int)strlen_P(query);
   } else {
@@ -96,6 +110,63 @@ boolean MySQL_Cursor::execute(const char *query, boolean progmem)
 
   // Send the query
   return execute_query(query_len);
+}
+
+
+/*
+  execute_query - execute a query
+
+  This method sends the query string to the server and waits for a
+  response. If the result is a result set, it returns true, if it is
+  an error, it processes the error packet and prints the error via
+  Serial.print(). If it is an Ok packet, it parses the packet and
+  returns false.
+
+  query_len[in]   Number of bytes in the query string
+
+  Returns boolean - true = result set available,
+                    false = no result set returned.
+*/
+boolean MySQL_Cursor::execute_query(int query_len)
+{
+  if (!conn->buffer)
+    return false;
+
+  conn->store_int(&conn->buffer[0], query_len+1, 3);
+  conn->buffer[3] = byte(0x00);
+  conn->buffer[4] = byte(0x03);  // command packet
+
+  // Send the query
+  conn->client->write((uint8_t*)conn->buffer, query_len + 5);
+
+  // Read a response packet and check it for Ok or Error.
+  conn->read_packet();
+  int res = conn->get_packet_type();
+  if (res == MYSQL_ERROR_PACKET) {
+    conn->parse_error_packet();
+    return false;
+  } else if (res == MYSQL_OK_PACKET) {
+    return true;
+  } else {
+    return false;
+  }
+  // Not an Ok packet, so we now have the result set to process.
+#ifdef WITH_SELECT
+  columns_read = false;
+#endif
+  return true;
+}
+
+
+#ifdef WITH_SELECT
+/*
+  Close
+
+  Takes care of removing allocated memory.
+*/
+void MySQL_Cursor::close() {
+  free_columns_buffer();
+  free_row_buffer();
 }
 
 
@@ -198,58 +269,6 @@ void MySQL_Cursor::show_results() {
 
 
 /*
-  Close
-
-  Takes care of removing allocated memory.
-*/
-void MySQL_Cursor::close() {
-  free_columns_buffer();
-  free_row_buffer();
-}
-
-
-// Begin private methods
-
-/*
-  execute_query - execute a query
-
-  This method sends the query string to the server and waits for a
-  response. If the result is a result set, it returns true, if it is
-  an error, it processes the error packet and prints the error via
-  Serial.print(). If it is an Ok packet, it parses the packet and
-  returns false.
-
-  query_len[in]   Number of bytes in the query string
-
-  Returns boolean - true = result set available,
-                    false = no result set returned.
-*/
-boolean MySQL_Cursor::execute_query(int query_len)
-{
-  conn->store_int(&conn->buffer[0], query_len+1, 3);
-  conn->buffer[3] = byte(0x00);
-  conn->buffer[4] = byte(0x03);  // command packet
-
-  // Send the query
-  for (int c = 0; c < query_len+5; c++)
-    conn->client->write(conn->buffer[c]);
-
-  // Read a response packet and check it for Ok or Error.
-  conn->read_packet();
-  int res = conn->check_ok_packet();
-  if (res == MYSQL_ERROR_PACKET) {
-    conn->parse_error_packet();
-    return false;
-  } else if (!res) {
-    return false;
-  }
-  // Not an Ok packet, so we now have the result set to process.
-  columns_read = false;
-  return true;
-}
-
-
-/*
   clear_ok_packet - clear last Ok packet (if present)
 
   This method reads the header and status to see if this is an Ok packet.
@@ -265,7 +284,7 @@ bool MySQL_Cursor::clear_ok_packet() {
     num = conn->client->available();
     if (num > 0) {
       conn->read_packet();
-      if (conn->check_ok_packet() != 0) {
+      if (conn->get_packet_type() != MYSQL_OK_PACKET) {
         conn->parse_error_packet();
         return false;
       }
@@ -335,6 +354,9 @@ void MySQL_Cursor::free_row_buffer() {
   Returns string - String from the buffer
 */
 char *MySQL_Cursor::read_string(int *offset) {
+  if (!conn->buffer)
+    return NULL;
+
   int len_bytes = conn->get_lcb_len(conn->buffer[*offset]);
   int len = conn->read_int(*offset, len_bytes);
   char *str = (char *)malloc(len+1);
@@ -377,7 +399,7 @@ int MySQL_Cursor::get_field(field_struct *fs) {
 
   // Read field packets until EOF
   conn->read_packet();
-  if (conn->buffer[4] != MYSQL_EOF_PACKET) {
+  if (conn->buffer && conn->buffer[4] != MYSQL_EOF_PACKET) {
     // calculate location of db
     len_bytes = conn->get_lcb_len(4);
     len = conn->read_int(4, len_bytes);
@@ -416,7 +438,7 @@ int MySQL_Cursor::get_field(field_struct *fs) {
 int MySQL_Cursor::get_row() {
   // Read row packets
   conn->read_packet();
-  if (conn->buffer[4] != MYSQL_EOF_PACKET)
+  if (conn->buffer && conn->buffer[4] != MYSQL_EOF_PACKET)
     return 0;
   return MYSQL_EOF_PACKET;
 }
@@ -484,3 +506,5 @@ int MySQL_Cursor::get_row_values() {
   }
   return res;
 }
+
+#endif  // WITH_SELECT
