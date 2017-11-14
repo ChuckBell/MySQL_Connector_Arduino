@@ -145,11 +145,10 @@ boolean MySQL_Cursor::execute_query(int query_len)
   if (res == MYSQL_ERROR_PACKET) {
     conn->parse_error_packet();
     return false;
-  } else if (res == MYSQL_OK_PACKET) {
+  } else if (res == MYSQL_OK_PACKET || res == MYSQL_EOF_PACKET) {
     return true;
-  } else {
-    return false;
   }
+
   // Not an Ok packet, so we now have the result set to process.
 #ifdef WITH_SELECT
   columns_read = false;
