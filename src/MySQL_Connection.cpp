@@ -34,6 +34,7 @@
 
 #define MAX_CONNECT_ATTEMPTS 3
 #define CONNECT_DELAY_MS     500
+#define SUCCESS              1
 
 const char CONNECTED[] PROGMEM = "Connected to server version ";
 const char DISCONNECTED[] PROGMEM = "Disconnected.";
@@ -64,13 +65,13 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
   while (retries--)
   {
     connected = client->connect(server, port);
-    if (connected)
+    if (connected == SUCCESS)
       break;
 
     delay(CONNECT_DELAY_MS);
   }
 
-  if (!connected)
+  if (connected != SUCCESS)
     return false;
 
   read_packet();
