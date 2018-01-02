@@ -35,8 +35,6 @@
 
 #include <Ethernet.h>
 
-#define MYSQL_MAX_TIMEOUT   10
-#define MYSQL_MIN_BYTES     8
 #define MYSQL_OK_PACKET     0x00
 #define MYSQL_EOF_PACKET    0xfe
 #define MYSQL_ERROR_PACKET  0xff
@@ -59,13 +57,12 @@ class MySQL_Packet {
     void parse_handshake_packet();
     boolean scramble_password(char *password, byte *pwd_hash);
     void read_packet();
-    int check_ok_packet();
+    int get_packet_type();
     void parse_error_packet();
     int get_lcb_len(int offset);
     int read_int(int offset, int size=0);
     void store_int(byte *buff, long value, int size);
-    int wait_for_client();
-    boolean wait_for_data();
+    int wait_for_bytes(int bytes_count);
     void show_error(const char *msg, bool EOL = false);
     void print_packet();
 
