@@ -40,7 +40,7 @@ char pass[] = "ssid-password";     // your SSID Password
 
 WiFiClient client;                 // Use this for WiFi instead of EthernetClient
 MySQL_Connection conn(&client);
-MySQL_Cursor cursor(&conn);
+MySQL_Cursor* cursor;
 
 void setup()
 {
@@ -65,12 +65,15 @@ void setup()
     Serial.println("OK.");
   else
     Serial.println("FAILED.");
+  
+  // create MySQL cursor object
+  cursor = new MySQL_Cursor(&conn);
 }
 
 void loop()
 {
   if (conn.connected())
-    cursor.execute(INSERT_SQL);
+    cursor->execute(INSERT_SQL);
 
   delay(5000);
 }
