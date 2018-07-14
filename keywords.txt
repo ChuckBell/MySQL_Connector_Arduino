@@ -1,5 +1,5 @@
-connect	KEYWORD1
+connect	KEYWORD2
 execute	KEYWORD2
-show_results	KEYWORD3
-connected	KEYWORD4
-field_struct	KEYWORD5
+show_results	KEYWORD2
+connected	KEYWORD2
+field_struct	KEYWORD3
