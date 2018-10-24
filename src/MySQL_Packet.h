@@ -33,7 +33,7 @@
 #ifndef MYSQL_PACKET_H
 #define MYSQL_PACKET_H
 
-#include <Ethernet.h>
+#include <Client.h>
 
 #define MYSQL_OK_PACKET     0x00
 #define MYSQL_EOF_PACKET    0xfe
