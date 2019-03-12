@@ -33,7 +33,12 @@
 #ifndef MYSQL_PACKET_H
 #define MYSQL_PACKET_H
 
-#include <Ethernet.h>
+//added Carlos
+#ifdef ARDUINO_ARCH_ESP32 
+    #include <Arduino.h> 
+#else
+    #include <Ethernet.h>
+#endif
 
 #define MYSQL_OK_PACKET     0x00
 #define MYSQL_EOF_PACKET    0xfe
