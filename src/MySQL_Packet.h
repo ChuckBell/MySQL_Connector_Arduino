@@ -36,6 +36,8 @@
 //added Carlos
 #ifdef ARDUINO_ARCH_ESP32 
     #include <Arduino.h> 
+#elif ARDUINO_ARCH_ESP8266
+    #include <ESP8266WiFi.h>
 #else
     #include <Ethernet.h>
 #endif
