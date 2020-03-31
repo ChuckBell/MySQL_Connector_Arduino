@@ -17,6 +17,9 @@
   is an auto_increment, a string, and a timestamp. This will demonstrate how
   to save a date and time of when the row was inserted, which can help you
   determine when data was recorded or updated.
+  
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   INSTRUCTIONS FOR USE
 

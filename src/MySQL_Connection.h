@@ -30,6 +30,8 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #ifndef MYSQL_CONNECTION_H
 #define MYSQL_CONNECTION_H
@@ -40,7 +42,8 @@ class MySQL_Connection : public MySQL_Packet {
   public:
     MySQL_Connection(Client *client_instance) :
         MySQL_Packet(client_instance) {}
-    boolean connect(IPAddress server, int port, char *user, char *password);
+    boolean connect(IPAddress server, int port, char *user, char *password,
+                    char *db=NULL);
     int connected() { return client->connected(); }
     const char *version() { return MYSQL_VERSION_STR; }
     void close();

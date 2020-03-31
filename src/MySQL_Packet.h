@@ -29,23 +29,26 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #ifndef MYSQL_PACKET_H
 #define MYSQL_PACKET_H
 
-//added Carlos
 #ifdef ARDUINO_ARCH_ESP32 
     #include <Arduino.h> 
 #elif ARDUINO_ARCH_ESP8266
     #include <ESP8266WiFi.h>
 #else
+//    #include <WiFi.h>
     #include <Ethernet.h>
 #endif
 
 #define MYSQL_OK_PACKET     0x00
 #define MYSQL_EOF_PACKET    0xfe
 #define MYSQL_ERROR_PACKET  0xff
-#define MYSQL_VERSION_STR   "1.1.1a"
+#define MYSQL_VERSION_STR   "1.2.0"
+#define DEBUG
 
 const char MEMORY_ERROR[] PROGMEM = "Memory error.";
 const char PACKET_ERROR[] PROGMEM = "Packet error.";
@@ -60,7 +63,8 @@ class MySQL_Packet {
 
     MySQL_Packet(Client *client_instance);
     boolean complete_handshake(char *user, char *password);
-    void send_authentication_packet(char *user, char *password);
+    void send_authentication_packet(char *user, char *password,
+                                    char *db=NULL);
     void parse_handshake_packet();
     boolean scramble_password(char *password, byte *pwd_hash);
     void read_packet();
@@ -69,6 +73,7 @@ class MySQL_Packet {
     int get_lcb_len(int offset);
     int read_int(int offset, int size=0);
     void store_int(byte *buff, long value, int size);
+    int read_lcb_int(int offset);
     int wait_for_bytes(int bytes_count);
     void show_error(const char *msg, bool EOL = false);
     void print_packet();

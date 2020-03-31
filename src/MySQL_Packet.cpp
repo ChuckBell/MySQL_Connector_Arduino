@@ -26,13 +26,15 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #include <Arduino.h>
 #include <MySQL_Packet.h>
 #include <MySQL_Encrypt_Sha1.h>
 
 #define MYSQL_DATA_TIMEOUT  3000   // Wifi client wait in milliseconds
-#define MYSQL_WAIT_INTERVAL 10     // WiFi client wait interval
+#define MYSQL_WAIT_INTERVAL 300    // WiFi client wait interval
 
 /*
   Constructor
@@ -86,12 +88,14 @@ void MySQL_Packet::show_error(const char *msg, bool EOL) {
   23                           (filler) always 0x00...
   n (Null-Terminated String)   user
   n (Length Coded Binary)      scramble_buff (1 + x bytes)
-  n (Null-Terminated String)   databasename (optional
+  n (Null-Terminated String)   databasename (optional)
 
   user[in]        User name
   password[in]    password
+  db[in]          default database
 */
-void MySQL_Packet::send_authentication_packet(char *user, char *password)
+void MySQL_Packet::send_authentication_packet(char *user, char *password,
+                                              char *db)
 {
   if (buffer != NULL)
     free(buffer);
@@ -101,7 +105,7 @@ void MySQL_Packet::send_authentication_packet(char *user, char *password)
   int size_send = 4;
 
   // client flags
-  buffer[size_send] = byte(0x85);
+  buffer[size_send] = byte(0x0D);
   buffer[size_send+1] = byte(0xa6);
   buffer[size_send+2] = byte(0x03);
   buffer[size_send+3] = byte(0x00);
@@ -138,13 +142,14 @@ void MySQL_Packet::send_authentication_packet(char *user, char *password)
   }
   free(scramble);
 
-  // terminate password response
-  buffer[size_send] = 0x00;
-  size_send += 1;
-
-  // database
-  buffer[size_send+1] = 0x00;
-  size_send += 1;
+  if (db) {
+    memcpy((char *)&buffer[size_send], db, strlen(db));
+    size_send += strlen(db) + 1;
+    buffer[size_send-1] = 0x00;
+  } else {
+    buffer[size_send+1] = 0x00;
+    size_send += 1;
+  }
 
   // Write packet size
   int p_size = size_send - 4;
@@ -153,6 +158,7 @@ void MySQL_Packet::send_authentication_packet(char *user, char *password)
 
   // Write the packet
   client->write((uint8_t*)buffer, size_send);
+  client->flush();
 }
 
 
@@ -281,11 +287,12 @@ void MySQL_Packet::read_packet() {
   packet_len += ((uint32_t)local[2] << 16);
 
   // We must wait for slow arriving packets for Ethernet shields only.
+/*
   if (wait_for_bytes(packet_len) < packet_len) {
     show_error(READ_TIMEOUT, true);
     return;
   }
-
+*/
   // Check for valid packet.
   if (packet_len < 0) {
     show_error(PACKET_ERROR, true);
@@ -434,8 +441,10 @@ int MySQL_Packet::get_lcb_len(int offset) {
       read_len = 3;
     else if (type == 0xfe)
       read_len = 8;
+  } else {
+    read_len = 1;
   }
-  return 1;
+  return read_len;
 }
 
 /*
@@ -461,7 +470,7 @@ int MySQL_Packet::read_int(int offset, int size) {
   new_size = size;
   int shifter = (new_size - 1) * 8;
   for (int i = new_size; i > 0; i--) {
-    value += (byte)(buffer[i-1] << shifter);
+    value += (buffer[i-1] << shifter);
     shifter -= 8;
   }
   return value;
@@ -497,6 +506,40 @@ void MySQL_Packet::store_int(byte *buff, long value, int size) {
     buff[2] = (byte)(value >> 16);
     buff[3] = (byte)(value >> 24);
   }
+}
+
+/*
+  read_lcb_int - Read an integer with len encoded byte
+
+  This reads an integer from the buffer looking at the first byte in the offset
+  as the encoded length of the integer.
+
+  offset[in]      offset from start of buffer
+
+  Returns integer - integer from the buffer
+*/
+int MySQL_Packet::read_lcb_int(int offset) {
+  int len_size = 0;
+  int size = 0;
+  int value = 0;
+  if (!buffer)
+      return -1;
+  len_size = buffer[offset];
+  if (len_size < 252) {
+    return buffer[offset];
+  } else if (len_size == 252) {
+    len_size = 2;
+  } else if (len_size == 253) {
+    len_size = 3;
+  } else {
+    len_size = 8;
+  }
+  int shifter = (len_size-1) * 8;
+  for (int i = len_size; i > 0; i--) {
+    value += (buffer[offset+i] << shifter);
+    shifter -= 8;
+  }
+  return value;
 }
 
 /*

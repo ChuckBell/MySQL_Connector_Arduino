@@ -8,6 +8,12 @@
   control how long the connection is open and thus reduce the amount of
   time a connection is held open. It also helps for lossy connections.
 
+  This example demonstrates how to connect to a MySQL server and specifying
+  the default database when connecting. 
+
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
+
   INSTRUCTIONS FOR USE
 
   1) Change the address of the server to the IP address of the MySQL server

@@ -3,6 +3,9 @@
 
   This example demonstrates how to reboot an Arduino if connection to the
   server is lost for a period of time.
+  
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   INSTRUCTIONS FOR USE
 

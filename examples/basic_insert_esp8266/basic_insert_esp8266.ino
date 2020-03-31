@@ -4,8 +4,10 @@
   This example demonstrates how to connect to a MySQL server from an
   Arduino using an Arduino-compatible Wifi shield. Note that "compatible"
   means it must conform to the Ethernet class library or be a derivative
-  thereof. See the documentation located in the /docs folder for more
-  details.
+  with the same classes and methods.
+  
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   INSTRUCTIONS FOR USE
 

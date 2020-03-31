@@ -1,16 +1,15 @@
 /*
-  MySQL Connector/Arduino Example : connect by hostname
+  MySQL Connector/Arduino Example : connect with default database
 
-  This example demonstrates how to connect to a MySQL server resolving the
-  hostname for cases when you do not know the IP address of the server or
-  it changes because it is in the cloud.
+  This example demonstrates how to connect to a MySQL server and specifying
+  the default database when connecting. 
 
   For more information and documentation, visit the wiki:
   https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   INSTRUCTIONS FOR USE
 
-  1) Change the hostname variable to the hostname of the MySQL server
+  1) Change the address of the server to the IP address of the MySQL server
   2) Change the user and password to a valid MySQL user and password
   3) Connect a USB cable to your Arduino
   4) Select the correct board and port
@@ -27,30 +26,23 @@
 */
 #include <Ethernet.h>
 #include <MySQL_Connection.h>
-#include <Dns.h>
 
 byte mac_addr[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-char hostname[] = "www.google.com"; // change to your server's hostname/URL
-char user[] = "root";               // MySQL user login username
-char password[] = "secret";         // MySQL user login password
+IPAddress server_addr(10,0,1,35);  // IP of the MySQL *server* here
+char user[] = "root";              // MySQL user login username
+char password[] = "secret";        // MySQL user login password
+char default_db = "test_arduino;
 
-IPAddress server_ip;
 EthernetClient client;
 MySQL_Connection conn((Client *)&client);
-DNSClient dns_client;   // DNS instance
 
 void setup() {
   Serial.begin(115200);
   while (!Serial); // wait for serial port to connect
   Ethernet.begin(mac_addr);
-  // Begin DNS lookup
-  dns_client.begin(Ethernet.dnsServerIP());
-  dns_client.getHostByName(hostname, server_ip);
-  Serial.println(server_ip);
-  // End DNS lookup
   Serial.println("Connecting...");
-  if (conn.connect(server_ip, 3306, user, password)) {
+  if (conn.connect(server_addr, 3306, user, password, default_db)) {
     delay(1000);
     // You would add your code here to run a query once on startup.
   }

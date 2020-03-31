@@ -3,19 +3,9 @@
 
   This example demonstrates how to connect to a MySQL server from an
   Arduino using using the new WiFi Shield 101 from arduino.cc.
-
-  NOTICE NOTICE NOTICE
-
-  The new WiFi 101 library is quite large. You should use this sketch and the
-  shield with the new Arduino Due or Zero.
-
-  You should also use the latest Arduino IDE from arduino.cc. This sketch was
-  tested with release 1.6.7 from https://www.arduino.cc/en/Main/Software
-  running on a Due board.
-
-  Also, make sure your hardware libraries are uptodate by visiting the
-  boards manager and installing updates for the boards you are tying to use
-  (e.g. Due, Zero).
+  
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   INSTRUCTIONS FOR USE
 

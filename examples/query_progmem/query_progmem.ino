@@ -6,6 +6,9 @@
   method in the cursor class, const and PROGMEM to the string declaration
   and add the #include <avr/pgmspace.h> directive.
 
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
+
   NOTICE: You must download and install the World sample database to run
           this sketch unaltered. See http://dev.mysql.com/doc/index-other.html.
 

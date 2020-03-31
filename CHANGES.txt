@@ -3,10 +3,11 @@ CHANGES
 This file contains a brief summary of changes made from previous versions of
 the connector.
 
-1.2.0a - April 2017
----------------------
+1.2.0 - March 2020
+------------------
+* Added connect with default database.
+* Added rows effected, last insert id. 
 * Stability and speed improvements.
-
 * Removed infinite wait in read_packet() if connection dropped.
   Merged wait_for_client() and wait_for_data() into one
   universal wait_for_bytes(int).

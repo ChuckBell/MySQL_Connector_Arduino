@@ -28,6 +28,9 @@
         method so that it runs only once. Typically, you would have the
         INSERT in the loop() method after your code to read from the sensor.
 
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
+
   INSTRUCTIONS FOR USE
 
   1) Create the database and table as shown above.

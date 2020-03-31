@@ -15,6 +15,9 @@
   CAUTION: Don't mix and match the examples. Use one or the other in your
            own sketch -- you'll get compilation errors at the least.
 
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
+
   INSTRUCTIONS FOR USE
 
   1) Change the address of the server to the IP address of the MySQL server

@@ -27,6 +27,8 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #include <Arduino.h>
 #include <MySQL_Connection.h>
@@ -52,11 +54,12 @@ const char DISCONNECTED[] PROGMEM = "Disconnected.";
   port[in]        port number of the server
   user[in]        user name
   password[in]    (optional) user password
+  db[in]          (optional) default database
 
   Returns boolean - True = connection succeeded
 */
 boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
-                                  char *password)
+                                  char *password, char *db)
 {
   int connected = 0;
   int retries = MAX_CONNECT_ATTEMPTS;
@@ -64,11 +67,16 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
   // Retry up to MAX_CONNECT_ATTEMPTS times.
   while (retries--)
   {
+    Serial.println("...trying...");
     connected = client->connect(server, port);
-    if (connected == SUCCESS)
+    if (connected != SUCCESS) {
+      Serial.print("...got: ");
+      Serial.print(connected);
+      Serial.println(" retrying...");
+      delay(CONNECT_DELAY_MS);
+    } else {
       break;
-
-    delay(CONNECT_DELAY_MS);
+    }
   }
 
   if (connected != SUCCESS)
@@ -76,7 +84,7 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
 
   read_packet();
   parse_handshake_packet();
-  send_authentication_packet(user, password);
+  send_authentication_packet(user, password, db);
   read_packet();
   if (get_packet_type() != MYSQL_OK_PACKET) {
     parse_error_packet();
@@ -85,9 +93,7 @@ boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
 
   show_error(CONNECTED);
 
-#ifdef DEBUG
   Serial.println(server_version);
-#endif
 
   free(server_version); // don't need it anymore
   return true;

@@ -30,6 +30,8 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #ifndef MYSQL_QUERY_H
 #define MYSQL_QUERY_H
@@ -75,6 +77,8 @@ class MySQL_Cursor {
     column_names *get_columns();
     row_values *get_next_row();
     void show_results();
+    int get_rows_affected() { return rows_affected; }
+    int get_last_insert_id() { return last_insert_id; }
 
   private:
     void free_columns_buffer();
@@ -92,6 +96,8 @@ class MySQL_Cursor {
     int num_cols;
     column_names columns;
     row_values row;
+    int rows_affected;
+    int last_insert_id;
 #endif
 
     MySQL_Connection *conn;

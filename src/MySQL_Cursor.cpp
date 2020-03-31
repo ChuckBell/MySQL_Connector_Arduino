@@ -26,6 +26,8 @@
   Version 1.0.4ga Updated by Dr. Charles A. Bell, July 2015.
   Version 1.1.0a Created by Dr. Charles A. Bell, January 2016.
   Version 1.1.1a Created by Dr. Charles A. Bell, January 2016.
+  Version 1.1.2b Created by Dr. Charles A. Bell, November 2016.
+  Version 1.2.0 Created by Dr. Charles A. Bell, March 2020.
 */
 #include <MySQL_Cursor.h>
 
@@ -51,6 +53,8 @@ MySQL_Cursor::MySQL_Cursor(MySQL_Connection *connection) {
     row.values[f] = NULL;
   }
   columns_read = false;
+  rows_affected = -1;
+  last_insert_id = -1;
 #endif
 }
 
@@ -132,12 +136,17 @@ boolean MySQL_Cursor::execute_query(int query_len)
   if (!conn->buffer)
     return false;
 
+  // Reset the rows affected and last insert id before query.
+  rows_affected = -1;
+  last_insert_id = -1;
+
   conn->store_int(&conn->buffer[0], query_len+1, 3);
   conn->buffer[3] = byte(0x00);
   conn->buffer[4] = byte(0x03);  // command packet
 
   // Send the query
   conn->client->write((uint8_t*)conn->buffer, query_len + 5);
+  conn->client->flush();
 
   // Read a response packet and check it for Ok or Error.
   conn->read_packet();
@@ -146,6 +155,22 @@ boolean MySQL_Cursor::execute_query(int query_len)
     conn->parse_error_packet();
     return false;
   } else if (res == MYSQL_OK_PACKET || res == MYSQL_EOF_PACKET) {
+    // Read the rows affected and last insert id.
+    int loc1 = conn->buffer[5];  // Location of rows affected
+    int loc2 = 5;
+    if (loc1 < 252) {
+      loc2++;
+    } else if (loc1 == 252) {
+      loc2 += 2;
+    } else if (loc1 == 253) {
+      loc2 += 3;
+    } else {
+      loc2 += 8;
+    }
+    rows_affected = conn->read_lcb_int(5);
+    if (rows_affected > 0) {
+      last_insert_id = conn->read_lcb_int(loc2);
+    }
     return true;
   }
 
@@ -289,6 +314,8 @@ bool MySQL_Cursor::clear_ok_packet() {
       }
     }
   } while (num > 0);
+  rows_affected = -1;
+  last_insert_id = -1;
   return true;
 }
 
@@ -353,15 +380,21 @@ void MySQL_Cursor::free_row_buffer() {
   Returns string - String from the buffer
 */
 char *MySQL_Cursor::read_string(int *offset) {
-  if (!conn->buffer)
-    return NULL;
-
+  char *str;
   int len_bytes = conn->get_lcb_len(conn->buffer[*offset]);
   int len = conn->read_int(*offset, len_bytes);
-  char *str = (char *)malloc(len+1);
-  strncpy(str, (char *)&conn->buffer[*offset+len_bytes], len);
-  str[len] = 0x00;
-  *offset += len_bytes+len;
+  if (len == 251) {
+    // This is a null field.
+    str = (char *)malloc(5);
+    strncpy(str, "NULL", 4);
+    str[4] = 0x00;
+    *offset += len_bytes;
+  } else {
+    str = (char *)malloc(len+1);
+    strncpy(str, (char *)&conn->buffer[*offset+len_bytes], len);
+    str[len] = 0x00;
+    *offset += len_bytes+len;
+  }
   return str;
 }
 

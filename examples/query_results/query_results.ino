@@ -4,6 +4,9 @@
   This example demonstrates how to issue a SELECT query and how to read columns
   and rows from the result set. Study this example until you are familiar with how to
   do this before writing your own sketch to read and consume query results.
+  
+  For more information and documentation, visit the wiki:
+  https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki.
 
   NOTICE: You must download and install the World sample database to run
           this sketch unaltered. See http://dev.mysql.com/doc/index-other.html.
