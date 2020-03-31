@@ -6,10 +6,5 @@ This also means you can setup your own, local MySQL server to store your data fu
 
 The MySQL Connector/Arduino is a library that permits you to do exactly that and more!
 
-See the reference manual in the extras folder for how to get starting using the library.
+See the all new [wiki documentation](https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki) for how to get starting using the library.
 
-Notice
-------
-This is a new release of the Connector/Arduino library. Older, obsolete versions (version 1.0.4ga and prior) can be found on LaunchPad.
-
-If you have used the older versions and are finding this library thinking it is a new library, you're partially correct. This version is greatly improved over the old version. To see what changed, see the "Changes from Previous Versions" section in the reference manual in the extras folder.
