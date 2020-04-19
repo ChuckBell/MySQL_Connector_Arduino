@@ -7,4 +7,3 @@ This also means you can setup your own, local MySQL server to store your data fu
 The MySQL Connector/Arduino is a library that permits you to do exactly that and more!
 
 See the all new [wiki documentation](https://github.com/ChuckBell/MySQL_Connector_Arduino/wiki) for how to get starting using the library.
-
