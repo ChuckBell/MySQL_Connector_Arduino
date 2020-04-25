@@ -94,9 +94,12 @@ void MySQL_Packet::show_error(const char *msg, bool EOL) {
   password[in]    password
   db[in]          default database
 */
-void MySQL_Packet::send_authentication_packet(char *user, char *password,
-                                              char *db)
-{
+//void MySQL_Packet::send_authentication_packet(char *user, char *password,
+//                                              char *db)
+// Modify 'char *' into 'const char *const' so that const string can be used here
+void MySQL_Packet::send_authentication_packet(
+  const char *const user, const char *const password, const char *const db
+) {
   if (buffer != NULL)
     free(buffer);
 
@@ -175,7 +178,9 @@ void MySQL_Packet::send_authentication_packet(char *user, char *password,
 
   Returns boolean - True = scramble succeeded
 */
-boolean MySQL_Packet::scramble_password(char *password, byte *pwd_hash) {
+//boolean MySQL_Packet::scramble_password(char *password, byte *pwd_hash) {
+// Modify 'char *' into 'const char *const' so that const string can be used here
+boolean MySQL_Packet::scramble_password(const char *const password, byte *pwd_hash) {
   byte *digest;
   byte hash1[20];
   byte hash2[20];
