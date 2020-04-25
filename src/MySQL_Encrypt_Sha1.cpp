@@ -86,12 +86,14 @@ void Encrypt_SHA1::addUncounted(uint8_t data) {
 size_t Encrypt_SHA1::write(uint8_t data) {
   ++byteCount;
   addUncounted(data);
+  return 1; // The function 'write' didn't return avalue. Return a value to disable the warning
 }
 
 size_t Encrypt_SHA1::write(uint8_t* data, int length) {
   for (int i=0; i<length; i++) {
     write(data[i]);
   }
+  return length; // The function 'write' didn't return avalue. Return a value to disable the warning
 }
 
 void Encrypt_SHA1::pad() {

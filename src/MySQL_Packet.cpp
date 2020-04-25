@@ -520,7 +520,7 @@ void MySQL_Packet::store_int(byte *buff, long value, int size) {
 */
 int MySQL_Packet::read_lcb_int(int offset) {
   int len_size = 0;
-  int size = 0;
+  //int size = 0; // The variable 'size' is unused. Comment it to disable the warning
   int value = 0;
   if (!buffer)
       return -1;
