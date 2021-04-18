@@ -470,7 +470,7 @@ int MySQL_Packet::read_int(int offset, int size) {
   new_size = size;
   int shifter = (new_size - 1) * 8;
   for (int i = new_size; i > 0; i--) {
-    value += (buffer[i-1] << shifter);
+    value += (buffer[offset+i-1] << shifter);
     shifter -= 8;
   }
   return value;
