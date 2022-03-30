@@ -50,7 +50,8 @@ void setup()
   while (!Serial); // wait for serial port to connect. Needed for Leonardo only
 
   // Begin WiFi section
-  Serial.printf("\nConnecting to %s", ssid);
+  Serial.print("\nConnecting to %s");
+  Serial.print(ssid);
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
