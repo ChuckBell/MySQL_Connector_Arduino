@@ -32,7 +32,7 @@ byte mac_addr[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 IPAddress server_addr(10,0,1,35);  // IP of the MySQL *server* here
 char user[] = "root";              // MySQL user login username
 char password[] = "secret";        // MySQL user login password
-char default_db = "test_arduino;
+char default_db[] = "test_arduino";
 
 EthernetClient client;
 MySQL_Connection conn((Client *)&client);
