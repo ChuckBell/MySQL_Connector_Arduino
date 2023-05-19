@@ -175,7 +175,7 @@ void MySQL_Packet::send_authentication_packet(const char *user, const char *pass
 
   Returns boolean - True = scramble succeeded
 */
-boolean MySQL_Packet::scramble_password(char *password, byte *pwd_hash) {
+boolean MySQL_Packet::scramble_password(const char *password, byte *pwd_hash) {
   byte *digest;
   byte hash1[20];
   byte hash2[20];
