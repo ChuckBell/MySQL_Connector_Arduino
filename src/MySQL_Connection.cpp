@@ -58,8 +58,8 @@ const char DISCONNECTED[] PROGMEM = "Disconnected.";
 
   Returns boolean - True = connection succeeded
 */
-boolean MySQL_Connection::connect(IPAddress server, int port, char *user,
-                                  char *password, char *db)
+boolean MySQL_Connection::connect(IPAddress server, int port, const char *user,
+                                  const char *password, const char *db)
 {
   int connected = 0;
   int retries = MAX_CONNECT_ATTEMPTS;
