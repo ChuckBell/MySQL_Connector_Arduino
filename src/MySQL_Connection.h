@@ -42,8 +42,8 @@ class MySQL_Connection : public MySQL_Packet {
   public:
     MySQL_Connection(Client *client_instance) :
         MySQL_Packet(client_instance) {}
-    boolean connect(IPAddress server, int port, char *user, char *password,
-                    char *db=NULL);
+    boolean connect(IPAddress server, int port, const char *user, const char *password,
+                    const char *db=NULL);
     int connected() { return client->connected(); }
     const char *version() { return MYSQL_VERSION_STR; }
     void close();
