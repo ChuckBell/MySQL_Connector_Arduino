@@ -66,7 +66,7 @@ class MySQL_Packet {
     void send_authentication_packet(const char *user, const char *password,
                                     const char *db=NULL);
     void parse_handshake_packet();
-    boolean scramble_password(char *password, byte *pwd_hash);
+    boolean scramble_password(const char *password, byte *pwd_hash);
     void read_packet();
     int get_packet_type();
     void parse_error_packet();
