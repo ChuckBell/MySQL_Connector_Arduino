@@ -94,8 +94,8 @@ void MySQL_Packet::show_error(const char *msg, bool EOL) {
   password[in]    password
   db[in]          default database
 */
-void MySQL_Packet::send_authentication_packet(char *user, char *password,
-                                              char *db)
+void MySQL_Packet::send_authentication_packet(const char *user, const char *password,
+                                              const char *db)
 {
   if (buffer != NULL)
     free(buffer);
